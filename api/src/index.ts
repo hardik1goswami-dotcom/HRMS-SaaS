@@ -48,5 +48,40 @@ app.get("/db-test", async (c) => {
     );
   }
 });
+app.get("/db-schema-test", async (c) => {
+  const client = createDbClient(c.env.HYPERDRIVE.connectionString);
 
+  try {
+    await client.connect();
+
+    const result = await client.query(`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+      ORDER BY table_name
+    `);
+
+    await client.end();
+
+    return c.json({
+      success: true,
+      message: "HRMS database schema verified",
+      tables: result.rows.map((row) => row.table_name),
+    });
+  } catch (error) {
+    console.error(error);
+
+    try {
+      await client.end();
+    } catch {}
+
+    return c.json(
+      {
+        success: false,
+        message: "HRMS database schema verification failed",
+      },
+      500
+    );
+  }
+});
 export default app;
