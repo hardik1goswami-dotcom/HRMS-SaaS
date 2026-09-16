@@ -1,0 +1,1 @@
+type CloudflareBindings = Cloudflare.Env;
